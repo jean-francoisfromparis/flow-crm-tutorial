@@ -2,6 +2,8 @@ package com.example.application.views.list;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.security.PermitAll;
+
 import com.example.application.data.entity.Contact;
 import com.example.application.data.service.CrmService;
 import com.example.application.views.MainLayout;
@@ -17,6 +19,7 @@ import com.vaadin.flow.router.Route;
 
 @PageTitle("contact | CRM")
 @Route(value = "", layout = MainLayout.class)
+@PermitAll
 public class ListView extends VerticalLayout {
 	Grid<Contact> grid = new Grid<>(Contact.class);
 	TextField filterText = new TextField();

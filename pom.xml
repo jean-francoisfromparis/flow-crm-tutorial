@@ -109,6 +109,14 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-web</artifactId>
+    </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
         </dependency>
@@ -143,7 +151,7 @@
         <dependency>
             <groupId>org.jfree</groupId>
             <artifactId>jfreechart</artifactId>
-            <version>1.5.3</version>
+            <version>1.5.0</version>
           </dependency>
     </dependencies>
 

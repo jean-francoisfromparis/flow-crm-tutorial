@@ -1,8 +1,10 @@
 package com.example.application.views;
 
+import com.example.application.security.SecurityService;
 import com.example.application.views.list.ListView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -12,7 +14,10 @@ import com.vaadin.flow.router.RouterLink;
 
 public class MainLayout extends AppLayout {
 
-    public MainLayout() {
+    private SecurityService securityService;
+
+    public MainLayout(SecurityService securityService) {
+        this.securityService = securityService;
         createHeader();
         createDrawer();
     }
@@ -22,7 +27,8 @@ public class MainLayout extends AppLayout {
         listView.setHighlightCondition(HighlightConditions.sameLocation());
 
         addToDrawer(new VerticalLayout(
-                listView
+                listView,
+                new RouterLink("Dashboard", DashboardView.class)
             ));
     }
 
@@ -30,7 +36,9 @@ public class MainLayout extends AppLayout {
         H1 logo = new H1("CRM");
         logo.addClassNames("text-l", "m-m");
 
-        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo);
+       Button logOut = new Button("Deconnection", e -> securityService.logout());
+
+        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo,logOut);
 
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         header.expand(logo);
