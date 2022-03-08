@@ -39,6 +39,8 @@ public class ContactForm extends FormLayout {
 
 	private Contact contact;
 
+    public Object fisrtName;
+
 	public ContactForm(List<Company> companies, List<Status> statuses) {
 		addClassName("contact-form");
 		binder.bindInstanceFields(this);

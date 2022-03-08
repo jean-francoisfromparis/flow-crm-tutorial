@@ -1,9 +1,5 @@
 package com.example.application.views.list;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.security.PermitAll;
-
 import com.example.application.data.entity.Contact;
 import com.example.application.data.service.CrmService;
 import com.example.application.views.MainLayout;
@@ -16,121 +12,116 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import javax.annotation.security.PermitAll;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 
+@org.springframework.stereotype.Component
+@Scope("prototype")
 @PageTitle("contact | CRM")
 @Route(value = "", layout = MainLayout.class)
 @PermitAll
 public class ListView extends VerticalLayout {
-	Grid<Contact> grid = new Grid<>(Contact.class);
-	TextField filterText = new TextField();
-	ContactForm form;
+  Grid<Contact> grid = new Grid<>(Contact.class);
+  TextField filterText = new TextField();
+  ContactForm form;
 
-	@Autowired
-	private CrmService service;
+  @Autowired
+  private CrmService service;
 
-	private Contact contact;
+  private Contact contact;
 
-    public ListView(CrmService service) {
-    	this.service = service;
-    	addClassName("list-view");
-    	setSizeFull();
+  public ListView(CrmService service) {
+    this.service = service;
+    addClassName("list-view");
+    setSizeFull();
 
-    	ConfigureGrid();
-    	ConfigureForm();
+    ConfigureGrid();
+    ConfigureForm();
 
-    	add(
-    			getToolbar(),
-    			getContent()
-    			);
+    add(getToolbar(), getContent());
 
-    	updateList();
-    	closeEditor();
+    updateList();
+    closeEditor();
+  }
 
+  private void closeEditor() {
+    form.setContact(null);
+    form.setVisible(true);
+    removeClassName("editing");
+  }
+
+  private void updateList() {
+    grid.setItems(service.findAllContacts(filterText.getValue()));
+  }
+
+  private Component getContent() {
+    HorizontalLayout content = new HorizontalLayout(grid, form);
+    content.setFlexGrow(2, grid);
+    content.setFlexGrow(1, form);
+    content.addClassName("content");
+    content.setSizeFull();
+    return content;
+  }
+
+  private void ConfigureForm() {
+    form = new ContactForm(service.findAllCompanies(), service.findAllStatuses());
+    form.setWidth("25em");
+
+    form.addListener(ContactForm.SaveEvent.class, this::saveContact);
+    form.addListener(ContactForm.DeleteEvent.class, this::deleteContact);
+    form.addListener(ContactForm.CloseEvent.class, e -> closeEditor());
+  }
+
+  private void deleteContact(ContactForm.DeleteEvent event) {
+    service.deleteContact(event.getContact());
+    updateList();
+    closeEditor();
+  }
+
+  private void saveContact(ContactForm.SaveEvent event) {
+    service.saveContact(event.getContact());
+    updateList();
+    closeEditor();
+  }
+
+  private Component getToolbar() {
+    filterText.setPlaceholder("Filtrer par nom");
+    filterText.setClearButtonVisible(true);
+    filterText.setValueChangeMode(ValueChangeMode.LAZY);
+    filterText.addValueChangeListener(e -> updateList());
+
+    Button addContacButton = new Button("Ajouter un contact");
+    addContacButton.addClickListener(e -> addContact());
+
+    HorizontalLayout toolbar = new HorizontalLayout(filterText, addContacButton);
+    toolbar.addClassName("toolbar");
+    return toolbar;
+  }
+
+  private void addContact() {
+    grid.asSingleSelect().clear();
+    editContact(new Contact());
+  }
+
+  private void ConfigureGrid() {
+    grid.addClassName("contact-grid");
+    grid.setSizeFull();
+    grid.setColumns("firstName", "lastName", "email");
+    grid.addColumn(Contact -> Contact.getStatus().getName()).setHeader("Status");
+    grid.addColumn(Contact -> Contact.getCompany().getName()).setHeader("Company");
+    grid.getColumns().forEach(col -> col.setAutoWidth(true));
+
+    grid.asSingleSelect().addValueChangeListener(e -> editContact(e.getValue()));
+  }
+
+  private void editContact(Contact contact) {
+    if (contact == null) {
+      closeEditor();
+    } else {
+      form.setContact(contact);
+      form.setVisible(true);
+      addClassName("editing");
     }
-
-    private void closeEditor() {
-		form.setContact(null);
-		form.setVisible(true);
-		removeClassName("editing");
-
-	}
-
-	private void updateList() {
-
-		grid.setItems(service.findAllContacts(filterText.getValue()));
-
-	}
-
-	private Component getContent() {
-		HorizontalLayout content = new HorizontalLayout(grid, form);
-		content.setFlexGrow(2, grid);
-		content.setFlexGrow(1, form);
-		content.addClassName("content");
-		content.setSizeFull();
-		return content;
-	}
-
-	private void ConfigureForm() {
-		form = new ContactForm(service.findAllCompanies(),service.findAllStatuses());
-		form.setWidth("25em");
-
-		form.addListener(ContactForm.SaveEvent.class, this::saveContact);
-		form.addListener(ContactForm.DeleteEvent.class, this::deleteContact);
-		form.addListener(ContactForm.CloseEvent.class, e -> closeEditor());
-	}
-
-	private void deleteContact(ContactForm.DeleteEvent event) {
-		service.deleteContact(event.getContact());
-    	updateList();
-    	closeEditor();
-	}
-
-    private void saveContact(ContactForm.SaveEvent event) {
-    	service.saveContact(event.getContact());
-    	updateList();
-    	closeEditor();
-    }
-
-	private Component getToolbar() {
-    	filterText.setPlaceholder("Filtrer par nom");
-    	filterText.setClearButtonVisible(true);
-    	filterText.setValueChangeMode(ValueChangeMode.LAZY);
-    	filterText.addValueChangeListener(e->updateList());
-
-    	Button addContacButton = new Button("Ajouter un contact");
-    	addContacButton.addClickListener(e -> addContact());
-
-    	HorizontalLayout toolbar = new HorizontalLayout(filterText, addContacButton);
-    	toolbar.addClassName("toolbar");
-    	return toolbar;
-
-    }
-
-    private void addContact() {
-		grid.asSingleSelect().clear();
-		editContact(new Contact());
-
-	}
-
-	private void ConfigureGrid() {
-    	grid.addClassName("contact-grid");
-    	grid.setSizeFull();
-    	grid.setColumns("firstName", "lastName", "email");
-    	grid.addColumn(Contact -> Contact.getStatus().getName()).setHeader("Status");
-    	grid.addColumn(Contact -> Contact.getCompany().getName()).setHeader("Company");
-    	grid.getColumns().forEach(col -> col.setAutoWidth(true));
-
-    	grid.asSingleSelect().addValueChangeListener(e -> editContact(e.getValue()));
-    }
-
-	private void editContact(Contact contact) {
-		if(contact == null) {
-			closeEditor();
-		} else {
-			form.setContact(contact);
-			form.setVisible(true);
-			addClassName("editing");
-		}
-	}
-
+  }
 }
